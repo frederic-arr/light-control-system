@@ -12,10 +12,10 @@
 #include "dev/spi.h"
 #include "dev/lcd.h"
 #include "dev/touch.h"
+#include "dev/luminosity.h"
+#include "dev/sprite.h"
 
 #include "sprites/bg_day.h"
-#include "sprites/bg_night.h"
-#include "dev/luminosity.h"
 
 void INT_INIT(void) {
 	ISER0 = (1 << 21) | (1 << 17); // EINT3, RTC
@@ -52,7 +52,7 @@ int main(void)
 
 	CMD_NOP();
 	BG_SET_STATIC(0x00);
-	DRAW_SPRITE(0, 0, 240, 320, 0x00, bg_day);
+	DRAW_SPRITE(0, 0, 240, 320, 0x00, bg_day, 1);
 	CMD_VSCRSADD(0);
 
 	// RGB_LED_SET((color_t[]){{50, 51, 52}, {53, 54, 55}});
@@ -62,7 +62,7 @@ int main(void)
 	{
 		bool is_dark = LUMINOSITY_IS_DARK(); 
 		if (is_dark != was_dark) {
-			DRAW_SPRITE(0, 0, 240, 320, 0x00, is_dark ? bg_night : bg_day);
+			DRAW_SPRITE(0, 0, 240, 320, 0x00, bg_day, is_dark ? 0.25 : 1.0);
 			was_dark = is_dark;
 		}
 	}

@@ -104,22 +104,6 @@ void BG_SET_STATIC(uint16_t bg) {
     }
 }
 
-
-void DRAW_SPRITE(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bg, uint8_t *sprite) {
-    CMD_NOP();
-    ZONE_SET_REL(x, y, width, height);
-
-    CMD_RAMWR();
-    for (int i = 0; i < width * height; i++) {
-        uint16_t color = (sprite[2 * i + 1] << 8) | (sprite[2 * i]);
-        if (color == 0) {
-            color = bg;
-        }
-
-        CMD_COLORDATA16(color);
-    }
-}
-
 void LCD_INIT(void)
 {
 	LCD_WR_CMD(0x01); //software reset
