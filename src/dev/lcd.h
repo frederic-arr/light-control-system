@@ -22,11 +22,13 @@ void CMD_PASET(uint16_t y1, uint16_t y2);
 void CMD_RAMWR(void);
 void CMD_RAMRD(void);
 void CMD_VSCRSADD(uint16_t y);
+void CMD_COLORDATA(uint8_t a, uint8_t b);
 void CMD_COLORDATA16(uint16_t color);
 void CMD_RGBDATA16(uint8_t r, uint8_t g, uint8_t b);
 void ZONE_SET(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void ZONE_SET_REL(uint16_t x1, uint16_t y1, uint16_t width, uint16_t height);
 void ZONE_RESET(void);
+void DRAW_SPRITE(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bg, uint8_t *sprite);
 void BG_SET_STATIC(uint16_t bg);
 
 #endif // __LCD_H__

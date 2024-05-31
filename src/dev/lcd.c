@@ -37,6 +37,12 @@ void CMD_VSCRSADD(uint16_t y) {
 	LCD_WR_DATA(y & 0xFF);
 }
 
+void CMD_COLORDATA(uint8_t a, uint8_t b)
+{
+	LCD_WR_DATA(a);
+	LCD_WR_DATA(b);
+}
+
 void CMD_COLORDATA16(uint16_t color)
 {
 	LCD_WR_DATA(color >> 8);
@@ -95,6 +101,22 @@ void BG_SET_STATIC(uint16_t bg) {
 	CMD_RAMWR();
 	for (int i = 0; i < LCD_WIDTH * LCD_HEIGHT; i++) {
         CMD_COLORDATA16(bg);
+    }
+}
+
+
+void DRAW_SPRITE(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bg, uint8_t *sprite) {
+    CMD_NOP();
+    ZONE_SET_REL(x, y, width, height);
+
+    CMD_RAMWR();
+    for (int i = 0; i < width * height; i++) {
+        uint16_t color = (sprite[2 * i + 1] << 8) | (sprite[2 * i]);
+        if (color == 0) {
+            color = bg;
+        }
+
+        CMD_COLORDATA16(color);
     }
 }
 
