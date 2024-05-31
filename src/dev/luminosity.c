@@ -14,11 +14,20 @@
 #define REG_CTRL1 (0x8F)
 #define REG_ATIME (0x81)
 
+#define ATIME_712ms (0)
+
+#define AGAIN_1X (0)
+#define AGAIN_4X (1)
+#define AGAIN_16X (2)
+#define AGAIN_64X (3)
+
 void LUMINOSITY_INIT(void) {
-    uint8_t set_als_gain[2] = {REG_CTRL1, 3};
+    // Set ALS gain to 4x
+    uint8_t set_als_gain[2] = {REG_CTRL1, AGAIN_1X};
     uint8_t wr2 = I2C_master_write(0x39 << 1, &set_als_gain, 2);
 
-    uint8_t set_als_time[2] = {REG_ATIME, 192};
+    // Accumulate for 712 [ms]
+    uint8_t set_als_time[2] = {REG_ATIME, ATIME_712ms};
     uint8_t wr3 = I2C_master_write(0x39 << 1, &set_als_time, 2);
 
     uint8_t enable_als[2] = {REG_EN, EN_PON | EN_ALS | EN_WAIT};
@@ -41,5 +50,5 @@ bool LUMINOSITY_IS_DARK(void) {
     uint8_t wr = I2C_master_write(LUM_ADDR << 1, &reg2, 1);
     uint8_t rd = I2C_master_read((LUM_ADDR << 1) | 1, data, 2);
     uint16_t cdata = (data[1] << 8) | data[0];
-    return cdata < 1000;
+    return cdata < 0x0A00;
 }
