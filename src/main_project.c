@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <tlm.h>
 
 #include "sys/lpc1769_reg.h"
 #include "sys/utils.h"
@@ -62,6 +63,8 @@ int main(void)
 	uint16_t time = 0;
 
 	intersection_t intersection = inter_init();
+
+	uint8_t res = calling_rust_from_mcu(12, 22);
 
 	DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
 	inter_draw(&intersection, was_dark);

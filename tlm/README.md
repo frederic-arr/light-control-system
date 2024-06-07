@@ -1,0 +1,1 @@
+`cargo build --release --target thumbv8m.main-none-eabi`
