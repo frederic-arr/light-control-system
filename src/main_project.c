@@ -17,6 +17,8 @@
 
 #include "sprites/bg_day.h"
 #include "sprites/bg_night.h"
+#include "sprites/light_warn_on.h"
+#include "sprites/light_warn_off.h"
 #include "tl.h"
 
 void INT_INIT(void) {
@@ -56,6 +58,7 @@ int main(void)
 
 	DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
 	inter_draw(&intersection, was_dark);
+	uint8_t stabilization_factor = 0;
 	while (true)
 	{
 		bool is_dark = LUMINOSITY_IS_DARK(); 
@@ -67,6 +70,8 @@ int main(void)
 			} else {
 				inter_disable(&intersection);
 			};
+			stabilization_factor = 0;
+			intersection.stabilization_factor = 0;
 			intersection.time = 0;
 			inter_draw(&intersection, is_dark);
 			was_dark = is_dark;
@@ -75,7 +80,11 @@ int main(void)
 
 		inter_transition(&intersection);
 		inter_draw(&intersection, is_dark);
+		DRAW_SPRITE(200, 65, 14, 14, stabilization_factor == 0 ? light_warn_on : light_warn_off, is_dark);
 		intersection.time++;
+		if (intersection.time % 25 == 0) {
+			stabilization_factor = (stabilization_factor + 1) % 2;
+		}
 	}
 
 	return 0 ;

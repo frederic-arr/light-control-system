@@ -50,5 +50,5 @@ bool LUMINOSITY_IS_DARK(void) {
     uint8_t wr = I2C_master_write(LUM_ADDR << 1, &reg2, 1);
     uint8_t rd = I2C_master_read((LUM_ADDR << 1) | 1, data, 2);
     uint16_t cdata = (data[1] << 8) | data[0];
-    return cdata < 0x0A00;
+    return cdata < 0x0100;
 }
