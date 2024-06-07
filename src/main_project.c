@@ -64,7 +64,10 @@ int main(void)
 
 	intersection_t intersection = inter_init();
 
-	uint8_t res = calling_rust_from_mcu(12, 22);
+	tlm_init();
+	uint8_t a = tlm_app_data_next();
+	uint8_t b = tlm_app_data_next();
+	uint8_t c = tlm_app_data_next();
 
 	DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
 	inter_draw(&intersection, was_dark);
