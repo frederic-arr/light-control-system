@@ -31,6 +31,17 @@ void inter_disable(intersection_t* inter) {
 	tl_to_wait(&inter->veg_gva);
 }
 
+void inter_block(intersection_t* inter) {
+	inter->is_blocked = true;
+	inter->time = 0;
+	inter->stabilization_factor = 0;
+	tl_to_wait(&inter->cha_gva);
+	tl_to_wait(&inter->cha_veg);
+	tl_to_wait(&inter->gva_cha);
+	tl_to_wait(&inter->gva_veg);
+	tl_to_wait(&inter->veg_gva);
+}
+
 void inter_enable(intersection_t* inter) {
 	inter->is_disabled = false;
 	tl_to_wait(&inter->cha_gva);
@@ -41,6 +52,18 @@ void inter_enable(intersection_t* inter) {
 }
 
 void inter_transition(intersection_t* inter) {
+	if (inter->is_blocked) {
+		tl_to_wait(&inter->cha_gva);
+		tl_to_wait(&inter->cha_veg);
+		tl_to_wait(&inter->gva_cha);
+		tl_to_wait(&inter->gva_veg);
+		tl_to_wait(&inter->veg_gva);
+		if (inter->time >= 200) {
+			inter->is_blocked = false;
+		}
+		return;
+	}
+
 	uint16_t reset = inter->is_disabled ? 25 : 150;
 	if (inter->time % reset == 0) {
 		inter->stabilization_factor = (inter->stabilization_factor + 1) % 2;

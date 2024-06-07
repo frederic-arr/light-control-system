@@ -28,6 +28,7 @@ typedef struct _intersection_t {
 	uint16_t time;
 	uint8_t stabilization_factor;
 	bool is_disabled;
+	bool is_blocked;
 	intersection_state_t state;
 	traffic_light_t cha_gva;
 	traffic_light_t cha_veg;
@@ -38,6 +39,7 @@ typedef struct _intersection_t {
 
 intersection_t inter_init(void);
 void inter_transition(intersection_t* inter);
+void inter_block(intersection_t* inter);
 void inter_disable(intersection_t* inter);
 void inter_enable(intersection_t* inter);
 void inter_draw(intersection_t* inter, bool is_dark);
