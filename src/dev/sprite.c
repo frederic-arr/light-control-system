@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "sprite.h"
 #include "lcd.h"
 
@@ -13,18 +12,14 @@ uint16_t darken(uint16_t color, float factor) {
     return (((uint16_t)r) << 11) | (((uint16_t)g) << 5) | ((uint16_t)b);
 }
 
-void DRAW_SPRITE(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bg, uint8_t *sprite, float factor) {
+void DRAW_SPRITE(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t *sprite, bool is_dark) {
     CMD_NOP();
     ZONE_SET_REL(x, y, width, height);
 
     CMD_RAMWR();
     for (int i = 0; i < width * height; i++) {
         uint16_t color = (sprite[2 * i + 1] << 8) | (sprite[2 * i]);
-        if (color == 0) {
-            color = bg;
-        }
-
-        color = darken(color, factor);
+        color = darken(color, is_dark ? 0.75 : 1.0);
         CMD_COLORDATA16(color);
     }
 }
