@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "touch.h"
 #include "../sys/i2c.h"
 
 #define LUM_ADDR (0x39)

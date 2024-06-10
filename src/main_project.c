@@ -12,7 +12,7 @@
 #include "dev/gpio.h"
 #include "dev/spi.h"
 #include "dev/lcd.h"
-#include "dev/touch.h"
+#include "dev/ft6x06.h"
 #include "dev/luminosity.h"
 #include "dev/sprite.h"
 
@@ -29,13 +29,24 @@ void INT_INIT(void) {
 	ISER0 = (1 << 21) | (1 << 17); // EINT3, RTC
 }
 
-touch_t state = {0};
+ft6x06_touch_t state = {0};
 bool pedestrian_request = false;
 void EINT3_IRQHandler(void) {
-	state = TOUCH_STATE();
-	if (state.nb_touch >= 1) {
-		pedestrian_request = true;
+	if (ft6x06_get_touch(&state)) {
+		// The user is not trying to zoom or do anything wired
+		bool is_no_gesture = state.gesture_id == GESTURE_NO_GESTURE;
+
+		// The user is touching the screen with one finger
+		bool is_one_touch = state.nb_touch_points == 1;
+
+		// The user just touched the screen, he's not moving his finger
+		bool is_new = state.p1.event_flag == EVENT_PRESS_DOWN;
+
+		if (is_no_gesture && is_one_touch && is_new) {
+			pedestrian_request = true;
+		}
 	}
+
 	IO2IntClr = (1 << 10);
 	IO2IntClr = (1 << 11);
 	IO0IntClr = (1 << 19);
