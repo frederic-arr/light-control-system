@@ -1,10 +1,10 @@
 #ifndef __FT6X06_H__
 #define __FT6X06_H__
 
+// https://hepialsn.hesge.ch/myLab2/datasheets/Dalle_tactile_FT6206.pdf
+
 #include <stdbool.h>
 #include <stdint.h>
-
-// https://www.displayfuture.com/Display/datasheet/controller/FT6206.pdf
 
 #define __FT6X06_ADDR 0x38
 #define __FT6X06_WIDTH 320
