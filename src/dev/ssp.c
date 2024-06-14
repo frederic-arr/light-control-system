@@ -21,7 +21,12 @@ void ssp_init(void) {
     SSP0DMACR = 0b10; // Enable RX and TX DMA
 }
 
-void ssp_send(uint8_t data) {
+void ssp_write(uint8_t data) {
     SSP0DR = data;
     while (SSP0SR & (1 << 4));
+}
+
+void ssp_read(uint8_t *data) {
+    while (!(SSP0SR & (1 << 2)));
+    *data = SSP0DR;
 }

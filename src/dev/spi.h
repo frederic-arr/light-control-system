@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-void SPI_INIT(void);
-void SPI_write_cmd(uint8_t cmd);
-void SPI_write_data(uint8_t data);
+void spi_init(void);
+void spi_write(uint8_t data);
+void spi_read(uint8_t *data);
 
 #endif

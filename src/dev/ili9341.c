@@ -88,10 +88,7 @@ void ili9341_wr_cmd(uint8_t cmd)
 	FIO0CLR = (1 << 16);
 	FIO1CLR = (1 << 30);
 	SSP0DR = cmd;
-	while (SSP0SR & (1 << 4))
-	{
-		;
-	};
+	spi_write(cmd);
 	uint8_t data = SSP0DR;
 	FIO0SET = (1 << 16);
 }
@@ -101,10 +98,7 @@ uint8_t ili9341_wr_data(uint8_t cmd)
 	FIO0CLR = (1 << 16);
 	FIO1SET = (1 << 30);
 	SSP0DR = cmd;
-	while (SSP0SR & (1 << 4))
-	{
-		;
-	};
+	spi_write(cmd);
 	uint8_t data = SSP0DR;
 	FIO0SET = (1 << 16);
 	return data;
