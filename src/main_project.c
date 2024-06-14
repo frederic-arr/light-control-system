@@ -11,7 +11,7 @@
 #include "dev/clk.h"
 #include "dev/gpio.h"
 #include "dev/spi.h"
-#include "dev/lcd.h"
+#include "dev/ili9341.h"
 #include "dev/ft6x06.h"
 #include "dev/luminosity.h"
 #include "dev/sprite.h"
@@ -61,14 +61,14 @@ int main(void)
 	init_i2c(0, 400000);
 	
 	FIO1PIN |= 1 << 18;
-	LCD_INIT();
+	ili9341_init();
 	LUMINOSITY_INIT();
 
 	INT_INIT();
 
-	CMD_NOP();
-	BG_SET_STATIC(0x00);
-	CMD_VSCRSADD(0);
+	ili9341_cmd_nop();
+	ili9341_bg_set(0x00);
+	ili9341_cmd_vscrsadd(0);
 	
 	bool was_dark = LUMINOSITY_IS_DARK();
 	uint16_t time = 0;
