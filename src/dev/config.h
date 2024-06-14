@@ -114,5 +114,6 @@
 #define SSP0CPSR        (*((volatile uint32_t *) 0x40088010))
 #define SSP0IMSC        (*((volatile uint32_t *) 0x40088014))
 #define SSP0SR          (*((volatile uint32_t *) 0x4008800C))
+#define SSP0DMACR       (*((volatile uint32_t *) 0x40088024))
 
 #endif /* CONFIG_LPC1769_H_ */

@@ -17,6 +17,8 @@ void ssp_init(void) {
 	FIO0DIR |= 1 << 16; // nCS_LCD SSEL OUT
 	FIO1DIR |= 1 << 30; // LCD DC
 	FIO1DIR |= 1 << 18; // Backlight
+
+    SSP0DMACR = 0b10; // Enable RX and TX DMA
 }
 
 void ssp_send(uint8_t data) {

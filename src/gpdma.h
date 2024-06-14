@@ -36,6 +36,6 @@ void gpdma_transfer(
     uint32_t size,
     uint8_t type
 );
-void gpdma_spi_transfer(uint32_t src_addr, uint32_t size);
+void gpdma_spp_transfer(uint32_t src_addr, uint32_t size);
 
 #endif // __GPDMA_H__

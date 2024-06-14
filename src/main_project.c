@@ -28,16 +28,17 @@
 #include "gpdma.h"
 
 void INT_INIT(void) {
-	ISER0 = (1 << 21) | (1 << 17); // EINT3, RTC
+	ISER0 = (1 << 26) | (1 << 21) | (1 << 17) | (1 << 14); // DMA, EINT3, RTC, SSP0
 }
 
 ft6x06_touch_t state = {0};
 bool pedestrian_request = false;
 
 void DMA_IRQHandler(void) {
-    if (DMACIntTCStat & 0b1) {
-        DMACIntTCClear = 0b1;
-    }
+    // if (DMACIntTCStat & 0b1) {
+    //     DMACIntTCClear = 0b1;
+    // }
+	return;
 }
 
 void EINT3_IRQHandler(void) {
@@ -81,9 +82,23 @@ int main(void)
 	ili9341_bg_set(0x00);
 	ili9341_cmd_vscrsadd(0);
 
-	// ili9341_cmd_ramwr();
-	// gpdma_spi_transfer(bg_day, 240 * 320 * 2);
-	// while (true) {;};
+	ili9341_cmd_nop();
+	ili9341_zone_reset();
+	ili9341_cmd_ramwr();
+	FIO0CLR = (1 << 16);
+	FIO1SET = (1 << 30);
+	// gpdma_spp_transfer(bg_day, 0xFFF);
+	int bs = 0xFFF;
+	int size = 240 * 320 * 2;
+	int offset = 0;
+	while (size != 0) {
+		int block_size = size > bs ? bs : size;
+		gpdma_spp_transfer(&bg_day[offset], block_size);
+		size -= block_size;
+		offset += block_size;
+	}
+	FIO0SET = (1 << 16);
+	while (true) {;};
 	
 	bool was_dark = LUMINOSITY_IS_DARK();
 	uint16_t time = 0;
