@@ -5,7 +5,7 @@
 #include "sys/lpc1769_reg.h"
 #include "sys/utils.h"
 #include "sys/i2c.h"
-#include "sys/ledrgb.h"
+// #include "sys/ledrgb.h"
 
 #include "dev/config.h"
 #include "dev/clk.h"
@@ -15,6 +15,7 @@
 #include "dev/ft6x06.h"
 #include "dev/luminosity.h"
 #include "dev/sprite.h"
+#include "dev/ssp.h"
 
 #include "sprites/bg_day.h"
 #include "sprites/bg_night.h"
@@ -24,6 +25,7 @@
 #include "sprites/light_ped_go.h"
 #include "sprites/light_ped_off.h"
 #include "tl.h"
+#include "gpdma.h"
 
 void INT_INIT(void) {
 	ISER0 = (1 << 21) | (1 << 17); // EINT3, RTC
@@ -31,6 +33,13 @@ void INT_INIT(void) {
 
 ft6x06_touch_t state = {0};
 bool pedestrian_request = false;
+
+void DMA_IRQHandler(void) {
+    if (DMACIntTCStat & 0b1) {
+        DMACIntTCClear = 0b1;
+    }
+}
+
 void EINT3_IRQHandler(void) {
 	if (ft6x06_get_touch(&state)) {
 		// The user is not trying to zoom or do anything wired
@@ -57,8 +66,10 @@ int main(void)
 	SystemInit();
 	GPIO_INIT();
     CLK_INIT();
-	SPI_INIT();
+	// SPI_INIT();
+	gpdma_init();
 	init_i2c(0, 400000);
+	ssp_init();
 	
 	FIO1PIN |= 1 << 18;
 	ili9341_init();
@@ -69,6 +80,10 @@ int main(void)
 	ili9341_cmd_nop();
 	ili9341_bg_set(0x00);
 	ili9341_cmd_vscrsadd(0);
+
+	// ili9341_cmd_ramwr();
+	// gpdma_spi_transfer(bg_day, 240 * 320 * 2);
+	// while (true) {;};
 	
 	bool was_dark = LUMINOSITY_IS_DARK();
 	uint16_t time = 0;
@@ -120,4 +135,3 @@ int main(void)
 
 	return 0 ;
 }
-

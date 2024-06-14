@@ -105,4 +105,14 @@
 // Flash Accelerator
 #define FLASHCFG		(*((volatile uint32_t *) 0x400FC000))
 
+
+
+
+#define SSP0CR0			(*((volatile uint32_t *) 0x40088000))
+#define SSP0CR1			(*((volatile uint32_t *) 0x40088004))
+#define SSP0DR          (*((volatile uint32_t *) 0x40088008))
+#define SSP0CPSR        (*((volatile uint32_t *) 0x40088010))
+#define SSP0IMSC        (*((volatile uint32_t *) 0x40088014))
+#define SSP0SR          (*((volatile uint32_t *) 0x4008800C))
+
 #endif /* CONFIG_LPC1769_H_ */
