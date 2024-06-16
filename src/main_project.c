@@ -64,9 +64,7 @@ ft6x06_touch_t state = {0};
 bool pedestrian_request = false;
 
 void DMA_IRQHandler(void) {
-    // if (DMACIntTCStat & 0b1) {
-    //     DMACIntTCClear = 0b1;
-    // }
+	DMACIntTCClear = 0b1;
 	return;
 }
 
@@ -93,6 +91,7 @@ void EINT3_IRQHandler(void) {
 
 int main(void)
 {
+
 	SystemInit();
 	GPIO_INIT();
     CLK_INIT();
@@ -117,10 +116,9 @@ int main(void)
     
     wait_for_ssp_bus_free();
     SET_LCD_DATA_MODE();
-    uint16_t buf[0xFFF];
     for (int i = 0; i < 35; i++) {
         wait_for_ssp_bus_free();
-        gpdma_transfer(&bg_day[0xFFF * i], 0xFFF, true);
+        gpdma_transfer(&bg_day[0xFF1 * i], 0xFF1, true);
         delay(10);
     }
 

@@ -11,7 +11,7 @@ void gpdma_configure(void) {
 
     DMACC0DestAddr = (uint32_t) & (SSP0DR);
 
-    ISER0 |= (1 << 27);
+    ISER0 |= (1 << 26);
 
     DMACC0LLI = 0;
     DMACConfig = 0x1;
