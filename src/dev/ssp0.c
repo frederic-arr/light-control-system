@@ -29,7 +29,8 @@ void ssp0_init(void) {
 
     SSP0CR1 = 0b10;  // Enable SSP0
 
-    ssp0_clear();  // This is stupid
+    ssp0_clear(); // The reset doesn't actually do anything, so we have to clear it manually
+    // Note: to anyone working at NPX, I wish you to step on a Lego.
 }
 
 uint8_t ssp0_write(uint8_t data) {
