@@ -10,12 +10,12 @@
 #include "dev/config.h"
 #include "dev/clk.h"
 #include "dev/gpio.h"
-#include "dev/spi.h"
+// #include "dev/spi.h"
 #include "dev/ili9341.h"
 #include "dev/ft6x06.h"
 #include "dev/luminosity.h"
 #include "dev/sprite.h"
-#include "dev/ssp.h"
+#include "dev/ssp0.h"
 
 #include "sprites/bg_day.h"
 #include "sprites/bg_night.h"
@@ -67,10 +67,10 @@ int main(void)
 	SystemInit();
 	GPIO_INIT();
     CLK_INIT();
-	spi_init();
+	// spi_init();
 	init_i2c(0, 400000);
 	// gpdma_init();
-	// ssp_init();
+	ssp0_init();
 	
 	FIO1PIN |= 1 << 18;
 	ili9341_init();

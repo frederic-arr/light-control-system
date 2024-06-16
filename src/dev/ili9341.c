@@ -1,6 +1,7 @@
 #include "ili9341.h"
 #include "config.h"
 #include "clk.h"
+#include "ssp0.h"
 
 void ili9341_cmd_nop(void)
 {
@@ -87,9 +88,7 @@ void ili9341_wr_cmd(uint8_t cmd)
 {
 	FIO0CLR = (1 << 16);
 	FIO1CLR = (1 << 30);
-	SSP0DR = cmd;
-	spi_write(cmd);
-	uint8_t data = SSP0DR;
+	uint8_t data = ssp0_write(cmd);
 	FIO0SET = (1 << 16);
 }
 
@@ -97,9 +96,7 @@ uint8_t ili9341_wr_data(uint8_t cmd)
 {
 	FIO0CLR = (1 << 16);
 	FIO1SET = (1 << 30);
-	SSP0DR = cmd;
-	spi_write(cmd);
-	uint8_t data = SSP0DR;
+	uint8_t data = ssp0_write(cmd);
 	FIO0SET = (1 << 16);
 	return data;
 }
@@ -117,6 +114,10 @@ void ili9341_bg_set(uint16_t bg)
 
 void ili9341_init(void)
 {
+	FIO0DIR |= 1 << 16; // nCS_LCD SSEL OUT
+	FIO1DIR |= 1 << 30; // LCD DC
+	FIO1DIR |= 1 << 18; // Backlight
+
 	ili9341_wr_cmd(0x01); // software reset
 	delay(5);
 
