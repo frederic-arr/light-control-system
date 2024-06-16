@@ -117,11 +117,14 @@ int main(void)
     
     wait_for_ssp_bus_free();
     SET_LCD_DATA_MODE();
-    for (int i = 0; i < 30; i++) {
+    uint16_t buf[0xFFF];
+    for (int i = 0; i < 35; i++) {
         wait_for_ssp_bus_free();
-        gpdma_transfer(bg_day + (0xFFF * i), 0xFFF, true);
-        delay(100);
+        gpdma_transfer(&bg_day[0xFFF * i], 0xFFF, true);
+        delay(10);
     }
+
+    while (true) {;};
 
 	// ili9341_cmd_nop();
 	// ili9341_bg_set(0xF0);
@@ -134,7 +137,7 @@ int main(void)
     // DMACC0Control = (0xFF0 & 0xFFF) | (0x01 << 18) | (1 << 26) | (1 << 31);
     // DMACC0Config = 1 | (1 << 11) |(1 << 15);
 
-    return;
+    // return;
 	
 	bool was_dark = LUMINOSITY_IS_DARK();
 	uint16_t time = 0;
