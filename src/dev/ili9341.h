@@ -13,6 +13,12 @@
 #define __ILI9341_CMD_RAMRD 0x2E
 #define __ILI9341_CMD_VSCRSADD 0x37
 
+#define LCD_CS_PIN  16
+#define LCD_RS_PIN  30
+#define LCD_CS_ENA() {FIO1CLR=(1<<LCD_CS_PIN);}
+#define SET_LCD_CMD_MODE() FIO1CLR=(1<<30)
+#define SET_LCD_DATA_MODE() FIO1SET=(1<<30)
+
 void ili9341_init(void);
 
 void ili9341_wr_cmd(uint8_t cmd);
