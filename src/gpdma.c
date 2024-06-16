@@ -16,8 +16,8 @@ void gpdma_transfer(
     uint8_t type
 ) {
     // Clear previous interrupts on channel 0
-    DMACIntTCClear = 1 << 0;
-    DMACIntErrClr = 1 << 0;
+    // DMACIntTCClear = 1 << 0;
+    // DMACIntErrClr = 1 << 0;
 
 
     // Set the source address

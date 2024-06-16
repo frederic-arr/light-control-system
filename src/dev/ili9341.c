@@ -88,17 +88,16 @@ void ili9341_wr_cmd(uint8_t cmd)
 {
 	FIO0CLR = (1 << 16);
 	FIO1CLR = (1 << 30);
-	uint8_t data = ssp0_write(cmd);
+	ssp0_write(cmd);
 	FIO0SET = (1 << 16);
 }
 
-uint8_t ili9341_wr_data(uint8_t cmd)
+void ili9341_wr_data(uint8_t cmd)
 {
 	FIO0CLR = (1 << 16);
 	FIO1SET = (1 << 30);
-	uint8_t data = ssp0_write(cmd);
+	ssp0_write(cmd);
 	FIO0SET = (1 << 16);
-	return data;
 }
 
 void ili9341_bg_set(uint16_t bg)

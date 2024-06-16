@@ -15,8 +15,8 @@
 
 void ili9341_init(void);
 
-static void ili9341_wr_cmd(uint8_t cmd);
-static uint8_t ili9341_wr_data(uint8_t cmd);
+void ili9341_wr_cmd(uint8_t cmd);
+void ili9341_wr_data(uint8_t cmd);
 
 void ili9341_cmd_nop(void);
 void ili9341_cmd_caset(uint16_t x1, uint16_t x2);
