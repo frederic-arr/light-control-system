@@ -25,7 +25,6 @@
 #include "sprites/light_ped_go.h"
 #include "sprites/light_ped_off.h"
 #include "tl.h"
-// #include "gpdma.h"
 
 void INT_INIT(void) {
 	ISER0 = (1 << 26) | (1 << 21) | (1 << 17) | (1 << 14); // DMA, EINT3, RTC, SSP0
@@ -62,20 +61,12 @@ void EINT3_IRQHandler(void) {
 	IO0IntClr = (1 << 19);
 }
 
-#include "dev/gpdma.h"
-
 int main(void)
 {
 	SystemInit();
 	GPIO_INIT();
     CLK_INIT();
-	// spi_init();
 	init_i2c(0, 400000);
-	// gpdma_init();
-	gpdma_configure((gpdma_configuration_t) {
-		.enable = true,
-		.is_big_endian = false,
-	});
 	ssp0_init();
 	
 	FIO1PIN |= 1 << 18;
@@ -87,24 +78,16 @@ int main(void)
 	ili9341_cmd_nop();
 	ili9341_bg_set(0xF0);
 	ili9341_cmd_vscrsadd(0);
-
-
-    // ssp0_clear_rx();
-	// ili9341_cmd_ramwr();
-	// FIO0CLR = (1 << 16);
-	// FIO1SET = (1 << 30);
-	// ssp0_write_buffer((uint16_t *)bg_day, 240 * 320);
-	// while (true) {;};
 	
 	bool was_dark = LUMINOSITY_IS_DARK();
 	uint16_t time = 0;
 
 	intersection_t intersection = inter_init();
 
-	tlm_init();
-	uint8_t a = tlm_app_data_next();
-	uint8_t b = tlm_app_data_next();
-	uint8_t c = tlm_app_data_next();
+	// tlm_init();
+	// uint8_t a = tlm_app_data_next();
+	// uint8_t b = tlm_app_data_next();
+	// uint8_t c = tlm_app_data_next();
 
 	DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
 	inter_draw(&intersection, was_dark);

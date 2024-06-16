@@ -16,7 +16,6 @@
 
 void ssp0_init(void);
 uint8_t ssp0_write(uint8_t data);
-void ssp0_write_buffer(uint16_t *data, uint16_t len);
-void ssp0_clear_rx(void);
+void ssp0_clear(void);
 
-#endif // __SSP_H__
+#endif  // __SSP_H__
