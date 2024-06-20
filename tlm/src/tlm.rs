@@ -70,7 +70,7 @@ impl Intersection {
 
         static mut DATA: [Sprite; 8] = [Wait; 8];
 
-        let warn = alternate(self.sync_tick, 1_000, Warn);
+        let warn = alternate(self.sync_tick, 750, Warn);
         let data = match self.state {
             Active(CycleA0(_)) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
             Transition(Clear, CycleA0(_), CycleA1(_)) => {
@@ -84,7 +84,7 @@ impl Intersection {
                 [Stop, Stop, Wait, Wait, Wait, Wait, Wait, warn]
             }
             Transition(Allow, CycleA1(_), CycleA2(_)) => {
-                [Wait, Wait, Wait, Ready, Ready, Wait, Wait, warn]
+                [Wait, Wait, Wait, Ready, Ready, Wait, Go, warn]
             }
             Active(CycleA2(_)) => [Wait, Wait, Wait, Go, Go, Wait, Go, warn],
 
@@ -158,13 +158,17 @@ impl Intersection {
             Active(CycleB0) if tick >= 16_000 => self.next(),
 
             // Main road transition for 4s
-            Transition(Clear, CycleA0(_), _) if tick >= 4_000 => self.next(),
+            Transition(Clear, CycleA0(_), _) if tick >= 6_000 => self.next(),
 
             // Pedestrian transition for 5s
             Transition(Clear, CycleB0, _) if tick >= 5_000 => self.next(),
 
-            // Secondary road transition for 2s
-            Transition(_, _, _) if tick >= 2_000 => self.next(),
+            // Pedestrian secondary for 8s
+            Transition(Clear, CycleA2(_), _) if tick >= 8_000 => self.next(),
+
+            // Secondary road transition for 4s to clear and 1.5s to allow
+            Transition(Clear, _, _) if tick >= 4_000 => self.next(),
+            Transition(Allow, _, _) if tick >= 1_500 => self.next(),
 
             _ => {}
         }
