@@ -33,11 +33,21 @@ enum Cycle {
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub enum TrafficLight {
+pub enum Sprite {
     Wait,
     Ready,
     Go,
     Stop,
+    Off,
+    Warn,
+}
+
+fn alternate(tick: u32, cycle: u32, sprite: Sprite) -> Sprite {
+    if tick % (cycle * 2) < cycle {
+        sprite
+    } else {
+        Sprite::Off
+    }
 }
 
 impl Intersection {
@@ -52,32 +62,72 @@ impl Intersection {
         }
     }
 
-    pub fn lights(&self) -> *const [TrafficLight; 6] {
+    pub fn sprites(&self) -> *const [Sprite; 8] {
         use Cycle::*;
         use Phase::*;
+        use Sprite::*;
         use State::*;
-        use TrafficLight::*;
 
-        static mut DATA: [TrafficLight; 6] = [Wait; 6];
+        static mut DATA: [Sprite; 8] = [Wait; 8];
 
+        let warn = alternate(self.sync_tick, 1_000, Warn);
         let data = match self.state {
-            Active(CycleA0(_)) => [Go, Wait, Go, Go, Wait, Wait],
-            Transition(Clear, CycleA0(_), CycleA1(_)) => [Go, Wait, Stop, Stop, Wait, Wait],
-            Transition(Allow, CycleA0(_), CycleA1(_)) => [Go, Ready, Wait, Wait, Wait, Wait],
-            Active(CycleA1(_)) => [Go, Go, Wait, Wait, Wait, Wait],
-            Transition(Clear, CycleA1(_), CycleA2(_)) => [Stop, Stop, Wait, Wait, Wait, Wait],
-            Transition(Allow, CycleA1(_), CycleA2(_)) => [Wait, Wait, Wait, Ready, Ready, Wait],
-            Active(CycleA2(_)) => [Wait, Wait, Wait, Go, Go, Wait],
+            Active(CycleA0(_)) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
+            Transition(Clear, CycleA0(_), CycleA1(_)) => {
+                [Go, Wait, Stop, Stop, Wait, Wait, Wait, warn]
+            }
+            Transition(Allow, CycleA0(_), CycleA1(_)) => {
+                [Go, Ready, Wait, Wait, Wait, Wait, Wait, warn]
+            }
+            Active(CycleA1(_)) => [Go, Go, Wait, Wait, Wait, Wait, Wait, warn],
+            Transition(Clear, CycleA1(_), CycleA2(_)) => {
+                [Stop, Stop, Wait, Wait, Wait, Wait, Wait, warn]
+            }
+            Transition(Allow, CycleA1(_), CycleA2(_)) => {
+                [Wait, Wait, Wait, Ready, Ready, Wait, Wait, warn]
+            }
+            Active(CycleA2(_)) => [Wait, Wait, Wait, Go, Go, Wait, Go, warn],
 
-            Transition(Clear, CycleA2(_), CycleA0(_)) => [Wait, Wait, Wait, Go, Stop, Wait],
-            Transition(Allow, CycleA2(_), CycleA0(_)) => [Ready, Wait, Ready, Go, Wait, Wait],
+            Transition(Clear, CycleA2(_), CycleA0(_)) => [
+                Wait,
+                Wait,
+                Wait,
+                Go,
+                Stop,
+                Wait,
+                alternate(self.sync_tick, 500, Go),
+                warn,
+            ],
+            Transition(Allow, CycleA2(_), CycleA0(_)) => {
+                [Ready, Wait, Ready, Go, Wait, Wait, Wait, warn]
+            }
 
-            Transition(Clear, CycleA2(_), CycleB0) => [Wait, Wait, Wait, Stop, Stop, Wait],
-            Transition(Allow, CycleA2(_), CycleB0) => [Ready, Wait, Ready, Wait, Wait, Wait],
+            Transition(Clear, CycleA2(_), CycleB0) => [
+                Wait,
+                Wait,
+                Wait,
+                Stop,
+                Stop,
+                Wait,
+                alternate(self.sync_tick, 500, Go),
+                warn,
+            ],
+            Transition(Allow, CycleA2(_), CycleB0) => {
+                [Ready, Wait, Ready, Wait, Wait, Wait, Wait, warn]
+            }
 
-            Active(CycleB0) => [Go, Wait, Go, Wait, Wait, Go],
-            Transition(Clear, CycleB0, CycleA0(_)) => [Go, Wait, Go, Wait, Wait, Stop],
-            Transition(Allow, CycleB0, CycleA0(_)) => [Go, Wait, Go, Ready, Wait, Wait],
+            Active(CycleB0) => [Go, Wait, Go, Wait, Wait, Go, Wait, warn],
+            Transition(Clear, CycleB0, CycleA0(_)) => [
+                Go,
+                Wait,
+                Go,
+                Wait,
+                Wait,
+                alternate(self.sync_tick, 500, Go),
+                Wait,
+                warn,
+            ],
+            Transition(Allow, CycleB0, CycleA0(_)) => [Go, Wait, Go, Ready, Wait, Wait, Wait, warn],
 
             _ => unreachable!("Invalid state: {:?}", self.state),
         };

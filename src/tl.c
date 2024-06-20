@@ -4,17 +4,27 @@
 #include <stdint.h>
 #include <tlm.h>
 
+#include "sprites/light_ped_go.h"
+#include "sprites/light_ped_off.h"
+#include "sprites/light_ped_stop.h"
 #include "sprites/light_veh_go.h"
 #include "sprites/light_veh_off.h"
 #include "sprites/light_veh_ready.h"
 #include "sprites/light_veh_stop.h"
 #include "sprites/light_veh_wait.h"
+#include "sprites/light_warn_off.h"
+#include "sprites/light_warn_on.h"
 
 uint16_t lights[5][2] = {
     {38, 70}, {68, 70}, {90, 216}, {136, 216}, {195, 135},
 };
-uint8_t* sprites[5] = {light_veh_wait, light_veh_ready, light_veh_go,
-                       light_veh_stop, light_veh_off};
+uint8_t* sprites[6] = {light_veh_wait, light_veh_ready, light_veh_go,
+                       light_veh_stop, light_veh_off,   light_veh_stop};
+uint8_t* sprites_pedestrian[6]
+    = {light_ped_stop, light_ped_stop, light_ped_go,
+       light_ped_stop, light_ped_off,  light_ped_stop};
+uint8_t* sprites_warn[6] = {light_warn_on, light_warn_on,  light_warn_on,
+                           light_warn_on, light_warn_off, light_warn_on};
 
 struct Intersection* intersection = NULL;
 
@@ -26,10 +36,13 @@ void tl_init() {
 struct Intersection* tl_get() { return intersection; }
 
 void tl_draw() {
-    enum TrafficLight* state = tlm_intersection_get_lights(intersection);
+    enum Sprite* state = tlm_intersection_get_lights(intersection);
     for (int i = 0; i < 5; i++) {
-        TrafficLight s = state[i];
-        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[s],
-                    false);
+        Sprite s = state[i];
+        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[s], false);
     }
+
+    DRAW_SPRITE(165, 150, 18, 16, sprites_pedestrian[state[5]], false);
+    DRAW_SPRITE(85, 110, 18, 16, sprites_pedestrian[state[6]], false);
+    DRAW_SPRITE(200, 65, 14, 14, sprites_warn[state[7]], false);
 }

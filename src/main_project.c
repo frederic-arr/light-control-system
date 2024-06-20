@@ -19,11 +19,6 @@
 #include "dev/ssp0.h"
 #include "sprites/bg_day.h"
 #include "sprites/bg_night.h"
-#include "sprites/light_ped_go.h"
-#include "sprites/light_ped_off.h"
-#include "sprites/light_ped_stop.h"
-#include "sprites/light_warn_off.h"
-#include "sprites/light_warn_on.h"
 #include "tl.h"
 
 #define DMACIntStat (*(volatile uint32_t *)0x50004000)

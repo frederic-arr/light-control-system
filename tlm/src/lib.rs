@@ -10,7 +10,7 @@ use panic_halt as _;
 use core::cell::{OnceCell, RefCell};
 use cortex_m::interrupt::Mutex;
 use embedded_alloc::Heap;
-use tlm::{Intersection, TrafficLight};
+use tlm::{Intersection, Sprite};
 
 type GlobalData<T> = Mutex<RefCell<OnceCell<T>>>;
 
@@ -53,6 +53,6 @@ pub unsafe extern "C" fn tlm_intersection_tick(intersection: &mut Intersection, 
 #[no_mangle]
 pub unsafe extern "C" fn tlm_intersection_get_lights(
     intersection: &Intersection,
-) -> *const [TrafficLight; 6] {
-    intersection.lights()
+) -> *const [Sprite; 8] {
+    intersection.sprites()
 }
