@@ -89,6 +89,9 @@ void EINT3_IRQHandler(void) {
 
 int main(void) {
     SystemInit();
+
+    tl_init();
+
     GPIO_INIT();
     CLK_INIT();
     init_i2c(0, 400000);
@@ -106,8 +109,6 @@ int main(void) {
     ili9341_bg_set(0xF0);
     ili9341_cmd_vscrsadd(0);
 
-
-    tlm_init();
     DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
     while (true) {
         tl_draw();

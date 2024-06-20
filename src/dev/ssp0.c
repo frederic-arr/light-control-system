@@ -43,6 +43,5 @@ uint8_t ssp0_write(uint8_t data) {
 void ssp0_clear(void) {
     while (SSP0SR & (1 << 3)) {  // While Receive FIFO is not empty
         uint8_t data = SSP0DR;
-        printf("Read data: %02X\n", data);
     }
 }

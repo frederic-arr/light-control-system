@@ -15,10 +15,21 @@ uint16_t lights[5][2] = {
 };
 uint8_t* sprites[5] = {light_veh_wait, light_veh_ready, light_veh_go,
                        light_veh_stop, light_veh_off};
+
+struct Intersection* intersection = NULL;
+
+void tl_init() {
+    tlm_init();
+    intersection = tlm_intersection_new();
+}
+
+struct Intersection* tl_get() { return intersection; }
+
 void tl_draw() {
-    enum TrafficLight* state = tlm_intersection_get_lights();
+    enum TrafficLight* state = tlm_intersection_get_lights(intersection);
     for (int i = 0; i < 5; i++) {
-        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[state[i]],
+        TrafficLight s = state[i];
+        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[s],
                     false);
     }
 }

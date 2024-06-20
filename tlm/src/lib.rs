@@ -2,6 +2,8 @@
 
 mod tlm;
 
+extern crate alloc;
+
 #[cfg(not(test))]
 use panic_halt as _;
 
@@ -39,11 +41,18 @@ pub unsafe extern "C" fn tlm_init() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn tlm_intersection_tick(by: u32) {
-    forward!(INTERSECTION.tick(by))
+pub unsafe extern "C" fn tlm_intersection_new() -> alloc::boxed::Box<Intersection> {
+    alloc::boxed::Box::new(Intersection::new())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn tlm_intersection_get_lights() -> *const TrafficLight {
-    forward!(INTERSECTION.lights()).as_ptr()
+pub unsafe extern "C" fn tlm_intersection_tick(intersection: &mut Intersection, by: u32) {
+    intersection.tick(by);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn tlm_intersection_get_lights(
+    intersection: &Intersection,
+) -> *const [TrafficLight; 6] {
+    intersection.lights()
 }

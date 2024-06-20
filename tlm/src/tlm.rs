@@ -1,3 +1,5 @@
+use core::ptr::addr_of;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Intersection {
     state: State,
@@ -50,13 +52,15 @@ impl Intersection {
         }
     }
 
-    pub fn lights(&self) -> [TrafficLight; 6] {
+    pub fn lights(&self) -> *const [TrafficLight; 6] {
         use Cycle::*;
         use Phase::*;
         use State::*;
         use TrafficLight::*;
 
-        match self.state {
+        static mut DATA: [TrafficLight; 6] = [Wait; 6];
+
+        let data = match self.state {
             Active(CycleA0(_)) => [Go, Wait, Go, Go, Wait, Wait],
             Transition(Clear, CycleA0(_), CycleA1(_)) => [Go, Wait, Stop, Stop, Wait, Wait],
             Transition(Allow, CycleA0(_), CycleA1(_)) => [Go, Ready, Wait, Wait, Wait, Wait],
@@ -65,8 +69,8 @@ impl Intersection {
             Transition(Allow, CycleA1(_), CycleA2(_)) => [Wait, Wait, Wait, Ready, Ready, Wait],
             Active(CycleA2(_)) => [Wait, Wait, Wait, Go, Go, Wait],
 
-            Transition(Clear, CycleA2(_), CycleA0(_)) => [Wait, Wait, Wait, Stop, Stop, Wait],
-            Transition(Allow, CycleA2(_), CycleA0(_)) => [Ready, Wait, Ready, Ready, Wait, Wait],
+            Transition(Clear, CycleA2(_), CycleA0(_)) => [Wait, Wait, Wait, Go, Stop, Wait],
+            Transition(Allow, CycleA2(_), CycleA0(_)) => [Ready, Wait, Ready, Go, Wait, Wait],
 
             Transition(Clear, CycleA2(_), CycleB0) => [Wait, Wait, Wait, Stop, Stop, Wait],
             Transition(Allow, CycleA2(_), CycleB0) => [Ready, Wait, Ready, Wait, Wait, Wait],
@@ -76,6 +80,11 @@ impl Intersection {
             Transition(Allow, CycleB0, CycleA0(_)) => [Go, Wait, Go, Ready, Wait, Wait],
 
             _ => unreachable!("Invalid state: {:?}", self.state),
+        };
+
+        unsafe {
+            DATA.copy_from_slice(&data);
+            addr_of!(DATA)
         }
     }
 
