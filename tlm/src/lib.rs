@@ -56,3 +56,15 @@ pub unsafe extern "C" fn tlm_intersection_get_lights(
 ) -> *const [Sprite; 8] {
     intersection.sprites()
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn tlm_intersection_request_pedestrian(intersection: &mut Intersection) {
+    intersection.request_pedestrian();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn tlm_intersection_has_pedestrian_request(
+    intersection: &Intersection,
+) -> bool {
+    intersection.has_pedestrian_request()
+}

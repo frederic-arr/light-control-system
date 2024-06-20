@@ -54,7 +54,6 @@ void INT_INIT(void) {
 }
 
 ft6x06_touch_t state = {0};
-bool pedestrian_request = false;
 
 void DMA_IRQHandler(void) {
     DMACIntTCClear = 0b1;
@@ -73,7 +72,7 @@ void EINT3_IRQHandler(void) {
         bool is_new = state.p1.event_flag == EVENT_PRESS_DOWN;
 
         if (is_no_gesture && is_one_touch && is_new) {
-            pedestrian_request = true;
+            tlm_intersection_request_pedestrian(tl_get());
         }
     }
 

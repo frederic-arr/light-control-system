@@ -62,6 +62,38 @@ impl Intersection {
         }
     }
 
+    pub fn has_pedestrian_request(&self) -> bool {
+        use Cycle::*;
+        use State::*;
+        use Phase::*;
+
+        match self.state {
+            Active(CycleA0(true)) => true,
+            Active(CycleA1(true)) => true,
+            Active(CycleA2(true)) => true,
+            Transition(Allow, _, CycleB0) => false,
+            Transition(_, CycleA0(true), _) => true,
+            Transition(_, CycleA1(true), _) => true,
+            Transition(_, CycleA2(true), _) => true,
+            _ => false,
+        }
+    }
+
+    pub fn request_pedestrian(&mut self) {
+        use Cycle::*;
+        use State::*;
+
+        self.state = match self.state {
+            Active(CycleA0(_)) => Active(CycleA0(true)),
+            Active(CycleA1(_)) => Active(CycleA1(true)),
+            Active(CycleA2(_)) => Active(CycleA2(true)),
+            Transition(p, CycleA0(_), CycleA1(_)) => Transition(p, CycleA0(true), CycleA1(true)),
+            Transition(p, CycleA1(_), CycleA2(_)) => Transition(p, CycleA1(true), CycleA2(true)),
+            Transition(p, CycleA2(_), CycleA0(_)) => Transition(p, CycleA2(true), CycleA0(true)),
+            _ => self.state,
+        };
+    }
+
     pub fn sprites(&self) -> *const [Sprite; 8] {
         use Cycle::*;
         use Phase::*;
@@ -113,7 +145,7 @@ impl Intersection {
                 warn,
             ],
             Transition(Allow, CycleA2(_), CycleB0) => {
-                [Ready, Wait, Ready, Wait, Wait, Wait, Wait, warn]
+                [Ready, Wait, Ready, Wait, Wait, Go, Wait, warn]
             }
 
             Active(CycleB0) => [Go, Wait, Go, Wait, Wait, Go, Wait, warn],
