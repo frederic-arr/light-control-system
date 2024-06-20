@@ -2,3 +2,9 @@
 resolver = "2"
 members = ["tlm"]
 default-members = ["tlm"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

@@ -7,19 +7,6 @@ build = "build.rs"
 [lib]
 crate-type = ["staticlib"]
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-
-[build]
-target = "thumbv8m.main-none-eabi"
-rustflags = ["-C", "link-arg=-nostdlib", "-C", "link-arg=-static"]
-
-[target.thumbv8m.main-none-eabi]
-linker = "armnone-eabi-gcc"
-
 [dependencies]
 cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7.3"
