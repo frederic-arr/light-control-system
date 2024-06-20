@@ -64,8 +64,8 @@ impl Intersection {
 
     pub fn has_pedestrian_request(&self) -> bool {
         use Cycle::*;
-        use State::*;
         use Phase::*;
+        use State::*;
 
         match self.state {
             Active(CycleA0(true)) => true,
@@ -75,6 +75,9 @@ impl Intersection {
             Transition(_, CycleA0(true), _) => true,
             Transition(_, CycleA1(true), _) => true,
             Transition(_, CycleA2(true), _) => true,
+            Transition(_, _, CycleA0(true)) => true,
+            Transition(_, _, CycleA1(true)) => true,
+            Transition(_, _, CycleA2(true)) => true,
             _ => false,
         }
     }
@@ -90,6 +93,7 @@ impl Intersection {
             Transition(p, CycleA0(_), CycleA1(_)) => Transition(p, CycleA0(true), CycleA1(true)),
             Transition(p, CycleA1(_), CycleA2(_)) => Transition(p, CycleA1(true), CycleA2(true)),
             Transition(p, CycleA2(_), CycleA0(_)) => Transition(p, CycleA2(true), CycleA0(true)),
+            Transition(p, CycleB0, CycleA0(_)) => Transition(p, CycleB0, CycleA0(true)),
             _ => self.state,
         };
     }

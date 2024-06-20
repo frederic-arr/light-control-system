@@ -49,4 +49,5 @@ void tl_draw() {
     DRAW_SPRITE(85, 110, 18, 16, sprites_pedestrian[state[6]], false);
     DRAW_SPRITE(200, 65, 14, 14, sprites_warn[state[7]], false);
     DRAW_SPRITE(196, 206, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], false);
+    DRAW_SPRITE(170, 109, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], false);
 }
