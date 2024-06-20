@@ -1,18 +1,14 @@
 #![no_std]
 
-extern crate alloc;
-
-use core::cell::{OnceCell, RefCell};
-
-use alloc::vec;
-use alloc::vec::Vec;
+mod tlm;
 
 #[cfg(not(test))]
 use panic_halt as _;
 
-use cortex_m as _;
+use core::cell::{OnceCell, RefCell};
 use cortex_m::interrupt::Mutex;
 use embedded_alloc::Heap;
+use tlm::{Intersection, TrafficLight};
 
 type GlobalData<T> = Mutex<RefCell<OnceCell<T>>>;
 
@@ -25,13 +21,7 @@ macro_rules! forward {
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
 
-static APP_DATA: GlobalData<AppData> = Mutex::new(RefCell::new(OnceCell::new()));
-
-#[derive(Debug)]
-pub struct AppData {
-    buffer: Vec<u8>,
-    state: u8,
-}
+static INTERSECTION: GlobalData<Intersection> = Mutex::new(RefCell::new(OnceCell::new()));
 
 #[no_mangle]
 pub unsafe extern "C" fn tlm_init() {
@@ -40,26 +30,20 @@ pub unsafe extern "C" fn tlm_init() {
     static mut HEAP_MEM: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
     HEAP.init(HEAP_MEM.as_ptr() as usize, HEAP_SIZE);
     cortex_m::interrupt::free(|cs| {
-        APP_DATA
+        INTERSECTION
             .borrow(cs)
             .borrow()
-            .set(AppData {
-                buffer: vec![1, 2, 3, 4, 5],
-                state: 0,
-            })
+            .set(Intersection::new())
             .unwrap();
     });
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn tlm_app_data_next() -> u8 {
-    forward!(APP_DATA.next())
+pub unsafe extern "C" fn tlm_intersection_tick(by: u32) {
+    forward!(INTERSECTION.tick(by))
 }
 
-impl AppData {
-    fn next(&mut self) -> u8 {
-        let element = self.buffer[self.state as usize];
-        self.state += 1;
-        element
-    }
+#[no_mangle]
+pub unsafe extern "C" fn tlm_intersection_get_lights() -> *const TrafficLight {
+    forward!(INTERSECTION.lights()).as_ptr()
 }
