@@ -22,6 +22,8 @@ enum State {
 
 #[derive(Debug, Clone, Copy)]
 enum Cycle {
+    Blocked,
+
     /// Vernier->Genève, Genève->Vernier, Genève->Meyrin
     CycleA0,
     /// Vernier->Genève, Vernier->Meyrin
@@ -64,8 +66,8 @@ impl Intersection {
         use State::*;
 
         Self {
-            state: Active(CycleA2),
-            request: None,
+            state: Active(Blocked),
+            request: Some(Request::Unblock),
             state_tick: 0,
             sync_tick: 0,
         }
@@ -99,6 +101,12 @@ impl Intersection {
 
         let warn = alternate(self.sync_tick, 750, Warn);
         let data = match self.state {
+            Active(Blocked) => [Wait, Wait, Wait, Wait, Wait, Wait, Wait, warn],
+            Transition(Clear, Blocked, CycleA0) => [Wait, Wait, Wait, Wait, Wait, Wait, Wait, warn],
+            Transition(Allow, Blocked, CycleA0) => {
+                [Ready, Wait, Ready, Ready, Wait, Wait, Wait, warn]
+            }
+
             Active(CycleA0) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
             Transition(Clear, CycleA0, CycleA1) => [Go, Wait, Stop, Stop, Wait, Wait, Wait, warn],
             Transition(Allow, CycleA0, CycleA1) => [Go, Ready, Wait, Wait, Wait, Wait, Wait, warn],
@@ -185,6 +193,8 @@ impl Intersection {
             Transition(Clear, _, _) if tick >= 4_000 => self.next(),
             Transition(Allow, _, _) if tick >= 1_500 => self.next(),
 
+            Active(Blocked) if tick >= 10_000 => self.next(),
+
             _ => {}
         }
     }
@@ -195,23 +205,18 @@ impl Intersection {
         use State::*;
 
         self.state_tick = 0;
-        self.state = match self.state {
-            Active(CycleA0) => Transition(Clear, CycleA0, CycleA1),
-            Active(CycleA1) => Transition(Clear, CycleA1, CycleA2),
-            Active(CycleA2) => match self.request {
-                Some(Request::Pedestrian) => Transition(Clear, CycleA2, CycleB0),
-                _ => Transition(Clear, CycleA2, CycleA0),
-            },
-            Active(CycleB0) => Transition(Clear, CycleB0, CycleA0),
-
-            Transition(Clear, a, b) => Transition(Allow, a, b),
-            Transition(Allow, _, b) => Active(b),
+        (self.request, self.state) = match (self.request, self.state) {
+            (Some(Request::Unblock), Active(Blocked)) => (None, Transition(Allow, Blocked, CycleA0)),
+            (r @ Some(Request::Pedestrian), Active(CycleA2)) => (r, Transition(Clear, CycleA2, CycleB0)),
+            (Some(Request::Pedestrian), Transition(Clear, CycleA2, CycleB0)) => (None, Transition(Allow, CycleA2, CycleB0)),
+            
+            (r, Active(CycleA0)) => (r, Transition(Clear, CycleA0, CycleA1)),
+            (r, Active(CycleA1)) => (r, Transition(Clear, CycleA1, CycleA2)),
+            (r, Active(CycleA2)) => (r, Transition(Clear, CycleA2, CycleA0)),
+            (r, Active(CycleB0)) => (r, Transition(Clear, CycleB0, CycleA0)),
+            (r, Transition(Clear, a, b)) => (r, Transition(Allow, a, b)),
+            (r, Transition(Allow, _, b)) => (r, Active(b)),
+            _ => (self.request, self.state),
         };
-
-        if self.request == Some(Request::Pedestrian)
-            && matches!(self.state, Active(CycleB0) | Transition(Allow, _, CycleB0))
-        {
-            self.request = None;
-        }
     }
 }
