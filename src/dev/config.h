@@ -43,28 +43,11 @@
 #define	FIO4CLR			(*((volatile uint32_t *) 0x2009C09C))
 
 // Custom
-#define IO0IntEnR			(*((volatile uint32_t *) 0x40028090))
-#define IO2IntEnR			(*((volatile uint32_t *) 0x400280B0))
-#define IO0IntEnF			(*((volatile uint32_t *) 0x40028094))
-#define IO2IntEnF			(*((volatile uint32_t *) 0x400280B4))
-#define IO0IntStatR			(*((volatile uint32_t *) 0x40028084))
-#define IO2IntStatR			(*((volatile uint32_t *) 0x400280A4))
-#define IO0IntStatF			(*((volatile uint32_t *) 0x40028088))
-#define IO2IntStatF			(*((volatile uint32_t *) 0x400280A8))
-#define IO0IntClr			(*((volatile uint32_t *) 0x4002808C))
-#define IO2IntClr			(*((volatile uint32_t *) 0x400280AC))
-#define IOIntStatus			(*((volatile uint32_t *) 0x40028080))
 #define ISER0				(*((volatile uint32_t *) 0xE000E100))
 #define ISER1				(*((volatile uint32_t *) 0xE000E104))
 
-#define STCTRL              (*((volatile uint32_t *) 0xE000E010))
-#define STRELOAD            (*((volatile uint32_t *) 0xE000E014))
-#define STCURR              (*((volatile uint32_t *) 0xE000E018))
-
-
 #define PINSEL0             (*((volatile uint32_t *) 0x4002C000))
 #define PINSEL1             (*((volatile uint32_t *) 0x4002C004))
-// #define PCONP               (*((volatile uint32_t *) 0x400FC0C4))
 #define PCLKSEL0            (*((volatile uint32_t *) 0x400FC1A8))
 #define S0SPCCR             (*((volatile uint32_t *) 0x4002000C))
 #define S0SPDR              (*((volatile uint32_t *) 0x40020008))

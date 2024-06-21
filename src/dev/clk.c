@@ -3,7 +3,6 @@
 #include <tlm.h>
 
 #include "../tl.h"
-#include "config.h"
 
 uint32_t clock = 0;
 void SysTick_Handler(void) {
@@ -19,7 +18,7 @@ void delay(uint32_t ms) {
     };
 }
 
-void CLK_INIT(void) {
+void clk_init(void) {
     STRELOAD = (SYSCLOCK / 100) - 1;
     STCTRL = 0b111;
 }

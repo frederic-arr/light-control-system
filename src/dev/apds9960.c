@@ -1,3 +1,5 @@
+#include "apds9960.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
