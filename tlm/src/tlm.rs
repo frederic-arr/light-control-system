@@ -5,6 +5,7 @@ pub struct Intersection {
     state: State,
     state_tick: u32,
     sync_tick: u32,
+    request: Option<Request>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -22,13 +23,20 @@ enum State {
 #[derive(Debug, Clone, Copy)]
 enum Cycle {
     /// Vernier->Genève, Genève->Vernier, Genève->Meyrin
-    CycleA0(bool),
+    CycleA0,
     /// Vernier->Genève, Vernier->Meyrin
-    CycleA1(bool),
+    CycleA1,
     /// Genève->Meyrin, Meyrin->Genève
-    CycleA2(bool),
+    CycleA2,
     /// Vernier->Genève, Genève->Vernier, Pedestrian
     CycleB0,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Request {
+    Pedestrian,
+    Block,
+    Unblock,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -56,28 +64,16 @@ impl Intersection {
         use State::*;
 
         Self {
-            state: Active(CycleA0(false)),
+            state: Active(CycleA2),
+            request: None,
             state_tick: 0,
             sync_tick: 0,
         }
     }
 
     pub fn has_pedestrian_request(&self) -> bool {
-        use Cycle::*;
-        use Phase::*;
-        use State::*;
-
-        match self.state {
-            Active(CycleA0(true)) => true,
-            Active(CycleA1(true)) => true,
-            Active(CycleA2(true)) => true,
-            Transition(Allow, _, CycleB0) => false,
-            Transition(_, CycleA0(true), _) => true,
-            Transition(_, CycleA1(true), _) => true,
-            Transition(_, CycleA2(true), _) => true,
-            Transition(_, _, CycleA0(true)) => true,
-            Transition(_, _, CycleA1(true)) => true,
-            Transition(_, _, CycleA2(true)) => true,
+        match self.request {
+            Some(Request::Pedestrian) => true,
             _ => false,
         }
     }
@@ -86,16 +82,11 @@ impl Intersection {
         use Cycle::*;
         use State::*;
 
-        self.state = match self.state {
-            Active(CycleA0(_)) => Active(CycleA0(true)),
-            Active(CycleA1(_)) => Active(CycleA1(true)),
-            Active(CycleA2(_)) => Active(CycleA2(true)),
-            Transition(p, CycleA0(_), CycleA1(_)) => Transition(p, CycleA0(true), CycleA1(true)),
-            Transition(p, CycleA1(_), CycleA2(_)) => Transition(p, CycleA1(true), CycleA2(true)),
-            Transition(p, CycleA2(_), CycleA0(_)) => Transition(p, CycleA2(true), CycleA0(true)),
-            Transition(p, CycleB0, CycleA0(_)) => Transition(p, CycleB0, CycleA0(true)),
-            _ => self.state,
-        };
+        match (self.state, self.request) {
+            (Transition(_, _, CycleB0) | Active(CycleB0), None) => {}
+            (_, None) => self.request = Some(Request::Pedestrian),
+            _ => {}
+        }
     }
 
     pub fn sprites(&self) -> *const [Sprite; 8] {
@@ -108,23 +99,15 @@ impl Intersection {
 
         let warn = alternate(self.sync_tick, 750, Warn);
         let data = match self.state {
-            Active(CycleA0(_)) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
-            Transition(Clear, CycleA0(_), CycleA1(_)) => {
-                [Go, Wait, Stop, Stop, Wait, Wait, Wait, warn]
-            }
-            Transition(Allow, CycleA0(_), CycleA1(_)) => {
-                [Go, Ready, Wait, Wait, Wait, Wait, Wait, warn]
-            }
-            Active(CycleA1(_)) => [Go, Go, Wait, Wait, Wait, Wait, Wait, warn],
-            Transition(Clear, CycleA1(_), CycleA2(_)) => {
-                [Stop, Stop, Wait, Wait, Wait, Wait, Wait, warn]
-            }
-            Transition(Allow, CycleA1(_), CycleA2(_)) => {
-                [Wait, Wait, Wait, Ready, Ready, Wait, Go, warn]
-            }
-            Active(CycleA2(_)) => [Wait, Wait, Wait, Go, Go, Wait, Go, warn],
+            Active(CycleA0) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
+            Transition(Clear, CycleA0, CycleA1) => [Go, Wait, Stop, Stop, Wait, Wait, Wait, warn],
+            Transition(Allow, CycleA0, CycleA1) => [Go, Ready, Wait, Wait, Wait, Wait, Wait, warn],
+            Active(CycleA1) => [Go, Go, Wait, Wait, Wait, Wait, Wait, warn],
+            Transition(Clear, CycleA1, CycleA2) => [Stop, Stop, Wait, Wait, Wait, Wait, Wait, warn],
+            Transition(Allow, CycleA1, CycleA2) => [Wait, Wait, Wait, Ready, Ready, Wait, Go, warn],
+            Active(CycleA2) => [Wait, Wait, Wait, Go, Go, Wait, Go, warn],
 
-            Transition(Clear, CycleA2(_), CycleA0(_)) => [
+            Transition(Clear, CycleA2, CycleA0) => [
                 Wait,
                 Wait,
                 Wait,
@@ -134,11 +117,9 @@ impl Intersection {
                 alternate(self.sync_tick, 500, Go),
                 warn,
             ],
-            Transition(Allow, CycleA2(_), CycleA0(_)) => {
-                [Ready, Wait, Ready, Go, Wait, Wait, Wait, warn]
-            }
+            Transition(Allow, CycleA2, CycleA0) => [Ready, Wait, Ready, Go, Wait, Wait, Wait, warn],
 
-            Transition(Clear, CycleA2(_), CycleB0) => [
+            Transition(Clear, CycleA2, CycleB0) => [
                 Wait,
                 Wait,
                 Wait,
@@ -148,12 +129,10 @@ impl Intersection {
                 alternate(self.sync_tick, 500, Go),
                 warn,
             ],
-            Transition(Allow, CycleA2(_), CycleB0) => {
-                [Ready, Wait, Ready, Wait, Wait, Go, Wait, warn]
-            }
+            Transition(Allow, CycleA2, CycleB0) => [Ready, Wait, Ready, Wait, Wait, Go, Wait, warn],
 
             Active(CycleB0) => [Go, Wait, Go, Wait, Wait, Go, Wait, warn],
-            Transition(Clear, CycleB0, CycleA0(_)) => [
+            Transition(Clear, CycleB0, CycleA0) => [
                 Go,
                 Wait,
                 Go,
@@ -163,7 +142,7 @@ impl Intersection {
                 Wait,
                 warn,
             ],
-            Transition(Allow, CycleB0, CycleA0(_)) => [Go, Wait, Go, Ready, Wait, Wait, Wait, warn],
+            Transition(Allow, CycleB0, CycleA0) => [Go, Wait, Go, Ready, Wait, Wait, Wait, warn],
 
             _ => unreachable!("Invalid state: {:?}", self.state),
         };
@@ -185,22 +164,22 @@ impl Intersection {
         let tick = self.state_tick;
         match self.state {
             // Main road for 12s
-            Active(CycleA0(_)) if tick >= 13_000 => self.next(),
+            Active(CycleA0) if tick >= 13_000 => self.next(),
 
             // Secondary road for 6s
-            Active(CycleA1(_) | CycleA2(_)) if tick >= 6_000 => self.next(),
+            Active(CycleA1 | CycleA2) if tick >= 6_000 => self.next(),
 
             // Pedestrian crossing for 16s
             Active(CycleB0) if tick >= 16_000 => self.next(),
 
             // Main road transition for 4s
-            Transition(Clear, CycleA0(_), _) if tick >= 6_000 => self.next(),
+            Transition(Clear, CycleA0, _) if tick >= 6_000 => self.next(),
 
             // Pedestrian transition for 5s
             Transition(Clear, CycleB0, _) if tick >= 5_000 => self.next(),
 
             // Pedestrian secondary for 8s
-            Transition(Clear, CycleA2(_), _) if tick >= 8_000 => self.next(),
+            Transition(Clear, CycleA2, _) if tick >= 8_000 => self.next(),
 
             // Secondary road transition for 4s to clear and 1.5s to allow
             Transition(Clear, _, _) if tick >= 4_000 => self.next(),
@@ -217,14 +196,22 @@ impl Intersection {
 
         self.state_tick = 0;
         self.state = match self.state {
-            Active(s @ CycleA0(v)) => Transition(Clear, s, CycleA1(v)),
-            Active(s @ CycleA1(v)) => Transition(Clear, s, CycleA2(v)),
-            Active(s @ CycleA2(false)) => Transition(Clear, s, CycleA0(false)),
-            Active(s @ CycleA2(true)) => Transition(Clear, s, CycleB0),
-            Active(s @ CycleB0) => Transition(Clear, s, CycleA0(false)),
+            Active(CycleA0) => Transition(Clear, CycleA0, CycleA1),
+            Active(CycleA1) => Transition(Clear, CycleA1, CycleA2),
+            Active(CycleA2) => match self.request {
+                Some(Request::Pedestrian) => Transition(Clear, CycleA2, CycleB0),
+                _ => Transition(Clear, CycleA2, CycleA0),
+            },
+            Active(CycleB0) => Transition(Clear, CycleB0, CycleA0),
 
             Transition(Clear, a, b) => Transition(Allow, a, b),
             Transition(Allow, _, b) => Active(b),
+        };
+
+        if self.request == Some(Request::Pedestrian)
+            && matches!(self.state, Active(CycleB0) | Transition(Allow, _, CycleB0))
+        {
+            self.request = None;
         }
     }
 }
