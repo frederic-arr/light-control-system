@@ -80,8 +80,7 @@
 #define __FT6X06_EVENT_FLAG_CONTACT 0x02
 #define __FT6X06_EVENT_FLAG_NO_EVENT 0x03
 
-typedef enum __ft6x06_gesture_id_t
-{
+typedef enum __ft6x06_gesture_id_t {
     GESTURE_NO_GESTURE = __FT6X06_GEST_ID_NO_GESTURE,
     GESTURE_MOVE_UP = __FT6X06_GEST_ID_MOVE_UP,
     GESTURE_MOVE_RIGHT = __FT6X06_GEST_ID_MOVE_RIGHT,
@@ -91,16 +90,14 @@ typedef enum __ft6x06_gesture_id_t
     GESTURE_ZOOM_OUT = __FT6X06_GEST_ID_ZOOM_OUT,
 } ft6x06_gesture_id_t;
 
-typedef enum __ft6x06_event_flag_t
-{
+typedef enum __ft6x06_event_flag_t {
     EVENT_NO_TOUCH = __FT6X06_EVENT_FLAG_NO_EVENT,
     EVENT_PRESS_DOWN = __FT6X06_EVENT_FLAG_PRESS_DOWN,
     EVENT_LIFT_UP = __FT6X06_EVENT_FLAG_LIFT_UP,
     EVENT_CONTACT = __FT6X06_EVENT_FLAG_CONTACT,
 } ft6x06_event_flag_t;
 
-typedef struct __ft6x06_touch_point_t
-{
+typedef struct __ft6x06_touch_point_t {
     uint16_t x;
     uint16_t y;
     ft6x06_event_flag_t event_flag;
@@ -109,8 +106,7 @@ typedef struct __ft6x06_touch_point_t
     uint8_t area;
 } ft6x06_touch_point_t;
 
-typedef struct __ft6x06_touch_t
-{
+typedef struct __ft6x06_touch_t {
     uint8_t nb_touch_points;
     ft6x06_gesture_id_t gesture_id;
     ft6x06_touch_point_t p1;
@@ -119,4 +115,4 @@ typedef struct __ft6x06_touch_t
 
 bool ft6x06_get_touch(ft6x06_touch_t *touch);
 
-#endif // __FT6X06_H__
+#endif  // __FT6X06_H__

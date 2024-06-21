@@ -14,7 +14,7 @@
 #define SSP0ICR (*(volatile uint32_t *)0x40088020)
 #define SSP0DMACR (*(volatile uint32_t *)0x40088024)
 
-#define SSPSR_BSY               (1 << 4)
+#define SSPSR_BSY (1 << 4)
 #define wait_for_ssp_bus_free() while ((SSP0SR & SSPSR_BSY) == SSPSR_BSY);
 
 void ssp0_init(void);
