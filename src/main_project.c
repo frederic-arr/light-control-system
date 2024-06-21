@@ -103,8 +103,19 @@ int main(void) {
     ili9341_bg_set(0xF0);
     ili9341_cmd_vscrsadd(0);
 
-    DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
+    bool was_dark = LUMINOSITY_IS_DARK();
+    DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
     while (true) {
+        // bool is_dark = LUMINOSITY_IS_DARK(); 
+        // if (is_dark && !was_dark) {
+        //     DRAW_SPRITE(0, 0, 240, 320, bg_night, false);
+        //     tlm_intersection_request_block(tl_get());
+        // } else if (!is_dark && was_dark) {
+        //     DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
+        //     tlm_intersection_request_unblock(tl_get());
+        // }
+
+        // was_dark = is_dark;
         tl_draw();
     }
 

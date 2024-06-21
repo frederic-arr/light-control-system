@@ -91,6 +91,20 @@ impl Intersection {
         }
     }
 
+    pub fn request_unblock(&mut self) {
+        match (self.state, self.request) {
+            (_, None) => self.request = Some(Request::Unblock),
+            _ => {}
+        }
+    }
+
+    pub fn request_block(&mut self) {
+        match (self.state, self.request) {
+            (_, None) => self.request = Some(Request::Block),
+            _ => {}
+        }
+    }
+
     pub fn sprites(&self) -> *const [Sprite; 8] {
         use Cycle::*;
         use Phase::*;
@@ -106,6 +120,7 @@ impl Intersection {
             Transition(Allow, Blocked, CycleA0) => {
                 [Ready, Wait, Ready, Ready, Wait, Wait, Wait, warn]
             }
+            Transition(Clear, CycleA1, Blocked) => [Stop, Stop, Wait, Wait, Wait, Wait, Wait, warn],
 
             Active(CycleA0) => [Go, Wait, Go, Go, Wait, Wait, Wait, warn],
             Transition(Clear, CycleA0, CycleA1) => [Go, Wait, Stop, Stop, Wait, Wait, Wait, warn],
@@ -193,7 +208,9 @@ impl Intersection {
             Transition(Clear, _, _) if tick >= 4_000 => self.next(),
             Transition(Allow, _, _) if tick >= 1_500 => self.next(),
 
-            Active(Blocked) if tick >= 10_000 => self.next(),
+            Active(Blocked) if tick >= 10_000 && self.request == Some(Request::Unblock) => {
+                self.next()
+            }
 
             _ => {}
         }
@@ -206,14 +223,22 @@ impl Intersection {
 
         self.state_tick = 0;
         (self.request, self.state) = match (self.request, self.state) {
-            (Some(Request::Unblock), Active(Blocked)) => (None, Transition(Allow, Blocked, CycleA0)),
-            (r @ Some(Request::Pedestrian), Active(CycleA2)) => (r, Transition(Clear, CycleA2, CycleB0)),
-            (Some(Request::Pedestrian), Transition(Clear, CycleA2, CycleB0)) => (None, Transition(Allow, CycleA2, CycleB0)),
-            
+            (Some(Request::Unblock), Active(Blocked)) => {
+                (None, Transition(Allow, Blocked, CycleA0))
+            }
+            (Some(Request::Block), Active(CycleA1)) => (None, Transition(Clear, CycleA1, Blocked)),
+            (r @ Some(Request::Pedestrian), Active(CycleA2)) => {
+                (r, Transition(Clear, CycleA2, CycleB0))
+            }
+            (Some(Request::Pedestrian), Transition(Clear, CycleA2, CycleB0)) => {
+                (None, Transition(Allow, CycleA2, CycleB0))
+            }
+
             (r, Active(CycleA0)) => (r, Transition(Clear, CycleA0, CycleA1)),
             (r, Active(CycleA1)) => (r, Transition(Clear, CycleA1, CycleA2)),
             (r, Active(CycleA2)) => (r, Transition(Clear, CycleA2, CycleA0)),
             (r, Active(CycleB0)) => (r, Transition(Clear, CycleB0, CycleA0)),
+            (r, Transition(Clear, _, Blocked)) => (r, Active(Blocked)),
             (r, Transition(Clear, a, b)) => (r, Transition(Allow, a, b)),
             (r, Transition(Allow, _, b)) => (r, Active(b)),
             _ => (self.request, self.state),
