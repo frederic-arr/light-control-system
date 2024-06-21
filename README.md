@@ -34,3 +34,7 @@ Furthermore, the GPDMA code is not yet integrated with the project. The integrat
 
 ## APDS-9960 (Digital Proximity, Ambient Light, RGB and Gesture Sensor)
 Optimally, this device should be interrupt-driven. Unfortunately, the required interrupt pin cannot be used due to technical limitations of the microcontroller (the device pin is connected to P1.27, while the only P0.X and P2.X can recieve interrupts). The device is therefore polled in the main loop which is sufficient for the current use case.
+
+## Sprites
+The sprites were created using Adobe XD and exported as PNG files. The sprites are then converted to C code using GIMP.
+You can find the original XD files under `sprites.xd` in the root directory.
