@@ -38,16 +38,16 @@ void tl_init() {
 
 struct Intersection* tl_get() { return intersection; }
 
-void tl_draw() {
+void tl_draw(bool is_dark) {
     enum Sprite* state = tlm_intersection_get_lights(intersection);
     for (int i = 0; i < 5; i++) {
         Sprite s = state[i];
-        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[s], false);
+        DRAW_SPRITE(lights[i][0], lights[i][1], 14, 32, sprites[s], is_dark);
     }
 
-    DRAW_SPRITE(165, 150, 18, 16, sprites_pedestrian[state[5]], false);
-    DRAW_SPRITE(85, 110, 18, 16, sprites_pedestrian[state[6]], false);
-    DRAW_SPRITE(200, 65, 14, 14, sprites_warn[state[7]], false);
-    DRAW_SPRITE(196, 206, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], false);
-    DRAW_SPRITE(170, 109, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], false);
+    DRAW_SPRITE(165, 150, 18, 16, sprites_pedestrian[state[5]], is_dark);
+    DRAW_SPRITE(85, 110, 18, 16, sprites_pedestrian[state[6]], is_dark);
+    DRAW_SPRITE(200, 65, 14, 14, sprites_warn[state[7]], is_dark);
+    DRAW_SPRITE(196, 206, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], is_dark);
+    DRAW_SPRITE(170, 109, 12, 12, sprites_req[tlm_intersection_has_pedestrian_request(intersection)], is_dark);
 }

@@ -74,10 +74,12 @@ void EINT3_IRQHandler(void) {
         if (is_no_gesture && is_one_touch && is_new) {
             tlm_intersection_request_pedestrian(tl_get());
         }
+
+        IO2IntClr = (1 << 11);
+        return;
     }
 
     IO2IntClr = (1 << 10);
-    IO2IntClr = (1 << 11);
     IO0IntClr = (1 << 19);
 }
 
@@ -95,7 +97,7 @@ int main(void) {
     FIO1PIN |= 1 << 18;
     ili9341_init();
 
-    LUMINOSITY_INIT();
+    apds9960_init();
 
     INT_INIT();
 
@@ -103,20 +105,21 @@ int main(void) {
     ili9341_bg_set(0xF0);
     ili9341_cmd_vscrsadd(0);
 
-    bool was_dark = LUMINOSITY_IS_DARK();
-    DRAW_SPRITE(0, 0, 240, 320, bg_day, was_dark);
+    bool was_dark = apds9960_get_luminosity() < 200;
+    DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
     while (true) {
-        // bool is_dark = LUMINOSITY_IS_DARK(); 
-        // if (is_dark && !was_dark) {
-        //     DRAW_SPRITE(0, 0, 240, 320, bg_night, false);
-        //     tlm_intersection_request_block(tl_get());
-        // } else if (!is_dark && was_dark) {
-        //     DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
-        //     tlm_intersection_request_unblock(tl_get());
-        // }
+        uint16_t luminosity = apds9960_get_luminosity();
+        bool is_dark = luminosity < 200;
+        if (is_dark && !was_dark) {
+            DRAW_SPRITE(0, 0, 240, 320, bg_night, false);
+            tlm_intersection_request_maintenance(tl_get());
+        } else if (!is_dark && was_dark) {
+            DRAW_SPRITE(0, 0, 240, 320, bg_day, false);
+            tlm_intersection_request_unblock(tl_get());
+        }
 
-        // was_dark = is_dark;
-        tl_draw();
+        was_dark = is_dark;
+        tl_draw(was_dark);
     }
 
     return 0;

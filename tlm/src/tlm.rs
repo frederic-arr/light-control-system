@@ -23,6 +23,7 @@ enum State {
 #[derive(Debug, Clone, Copy)]
 enum Cycle {
     Blocked,
+    Manual,
 
     /// Vernier->Genève, Genève->Vernier, Genève->Meyrin
     CycleA0,
@@ -39,6 +40,7 @@ enum Request {
     Pedestrian,
     Block,
     Unblock,
+    Maintenance,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -86,6 +88,8 @@ impl Intersection {
 
         match (self.state, self.request) {
             (Transition(_, _, CycleB0) | Active(CycleB0), None) => {}
+            (Active(Blocked | Manual), _) => {}
+            (Transition(_, _, Blocked | Manual), _) => {}
             (_, None) => self.request = Some(Request::Pedestrian),
             _ => {}
         }
@@ -99,8 +103,12 @@ impl Intersection {
     }
 
     pub fn request_block(&mut self) {
+        self.request = Some(Request::Block);
+    }
+
+    pub fn request_maintenance(&mut self) {
         match (self.state, self.request) {
-            (_, None) => self.request = Some(Request::Block),
+            (_, None | Some(Request::Pedestrian)) => self.request = Some(Request::Maintenance),
             _ => {}
         }
     }
@@ -115,7 +123,10 @@ impl Intersection {
 
         let warn = alternate(self.sync_tick, 750, Warn);
         let data = match self.state {
-            Active(Blocked) => [Wait, Wait, Wait, Wait, Wait, Wait, Wait, warn],
+            Active(Manual) => [warn, warn, warn, warn, warn, Off, Off, warn],
+            Active(Blocked) | Transition(Clear, Manual, Blocked) => {
+                [Wait, Wait, Wait, Wait, Wait, Wait, Wait, warn]
+            }
             Transition(Clear, Blocked, CycleA0) => [Wait, Wait, Wait, Wait, Wait, Wait, Wait, warn],
             Transition(Allow, Blocked, CycleA0) => {
                 [Ready, Wait, Ready, Ready, Wait, Wait, Wait, warn]
@@ -212,6 +223,14 @@ impl Intersection {
                 self.next()
             }
 
+            Active(Manual) if tick >= 10_000 && self.request == Some(Request::Unblock) => {
+                self.next()
+            }
+
+            Active(Blocked) if tick >= 10_000 && self.request == Some(Request::Maintenance) => {
+                self.next()
+            }
+
             _ => {}
         }
     }
@@ -226,7 +245,12 @@ impl Intersection {
             (Some(Request::Unblock), Active(Blocked)) => {
                 (None, Transition(Allow, Blocked, CycleA0))
             }
+            (r @ Some(Request::Unblock), Active(Manual)) => (r, Transition(Clear, Manual, Blocked)),
+            (Some(Request::Maintenance), Active(Blocked)) => (None, Active(Manual)),
             (Some(Request::Block), Active(CycleA1)) => (None, Transition(Clear, CycleA1, Blocked)),
+            (r @ Some(Request::Maintenance), Active(CycleA1)) => {
+                (r, Transition(Clear, CycleA1, Blocked))
+            }
             (r @ Some(Request::Pedestrian), Active(CycleA2)) => {
                 (r, Transition(Clear, CycleA2, CycleB0))
             }

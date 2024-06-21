@@ -78,3 +78,8 @@ pub unsafe extern "C" fn tlm_intersection_request_unblock(intersection: &mut Int
 pub unsafe extern "C" fn tlm_intersection_request_block(intersection: &mut Intersection) {
     intersection.request_block();
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn tlm_intersection_request_maintenance(intersection: &mut Intersection) {
+    intersection.request_maintenance();
+}

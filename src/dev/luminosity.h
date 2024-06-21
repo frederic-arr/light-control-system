@@ -5,7 +5,7 @@
 
 #include <stdbool.h>
 
-void LUMINOSITY_INIT(void);
-bool LUMINOSITY_IS_DARK(void);
+void apds9960_init(void);
+uint16_t apds9960_get_luminosity(void);
 
 #endif

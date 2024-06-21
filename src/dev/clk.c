@@ -9,7 +9,7 @@ uint32_t clock = 0;
 void SysTick_Handler(void) {
     STRELOAD = (SYSCLOCK / 100) - 1;
     clock++;
-    tlm_intersection_tick(tl_get(), 10);
+    tlm_intersection_tick(tl_get(), 100);
 }
 
 void delay(uint32_t ms) {

@@ -5,6 +5,6 @@
 
 void tl_init();
 struct Intersection* tl_get();
-void tl_draw();
+void tl_draw(bool is_dark);
 
 #endif
