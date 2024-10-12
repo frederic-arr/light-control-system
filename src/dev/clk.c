@@ -4,7 +4,7 @@
 
 #include "../tl.h"
 
-uint32_t clock = 0;
+volatile uint32_t clock = 0;
 void SysTick_Handler(void) {
     STRELOAD = (SYSCLOCK / 100) - 1;
     clock++;
